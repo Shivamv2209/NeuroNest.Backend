@@ -34,7 +34,7 @@ export const signup = async (req, res) => {
                     res.cookie(COOKIE_NAME, token,{
                         expires,
                     });
-                    res.json({ message: "User created successfully" });
+                    res.json({ message: "User created successfully",email: user.email});
                 } catch (error) {
                     if (error.name === "ValidationError") {
                         return res.status(400).json({ message: "Invalid email format. Only Gmail accounts are allowed." });
@@ -73,10 +73,25 @@ export const login = async (req, res) => {
             res.cookie(COOKIE_NAME, token,{
                 expires,
             });
-            res.json({ message: "User logged in successfully" });
+            res.json({ message: "User logged in successfully",email: user.email});
         });
     } catch (error) {
         res.status(500).json({ message: "Server error" });
     }
 };
+
+export const verifyUser = async (req,res)=>{
+    try{
+          const user = await user_model.findById(res.locals.jwtdata.id);
+          if(!user){
+            return res.status(401).json({ message: "Unauthorized or token malfunctioned" });
+          }
+          if(user._id.toString()!==res.locals.jwtData.id){
+                return res.status(401).json({ message: "Permissions didnt match" });
+          }
+          return res.status(200).json({ message:"OK",email:user.email});
+    }catch(err){
+       return res.status(500).json({message:"Internal server error"})
+    }
+}
 
