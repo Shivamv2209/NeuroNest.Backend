@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import user_model from "../models/User.js";
 import { generateToken } from "../utils/generateToken.js";
+import {COOKIE_NAME} from "../utils/constants.js";
 
 dotenv.config();
 
@@ -25,9 +26,14 @@ export const signup = async (req, res) => {
                         email,
                         password: hash,
                     });
+                    res.clearCookie(COOKIE_NAME)
 
                     let token = generateToken(user);
-                    res.cookie("token", token);
+                    const expires = new Date();
+                    expires.setDate(expires.getDate() + 7)
+                    res.cookie(COOKIE_NAME, token,{
+                        expires,
+                    });
                     res.json({ message: "User created successfully" });
                 } catch (error) {
                     if (error.name === "ValidationError") {
@@ -59,8 +65,14 @@ export const login = async (req, res) => {
                 return res.status(400).json({ message: "Wrong password" });
             }
 
+            res.clearCookie(COOKIE_NAME)
+
             let token = generateToken(user);
-            res.cookie("token", token);
+            const expires = new Date();
+            expires.setDate(expires.getDate() + 7)
+            res.cookie(COOKIE_NAME, token,{
+                expires,
+            });
             res.json({ message: "User logged in successfully" });
         });
     } catch (error) {
@@ -68,15 +80,3 @@ export const login = async (req, res) => {
     }
 };
 
-export const logout = (req,res)=>{
-    try{
-
-        res.cookie("token","");
-        res.status(200).json({ message: "User logged out successfully" });
-
-    }catch(err){
-
-        if(err) return res.status(500).json({message: "Error logging out"});
-
-    }
-}
