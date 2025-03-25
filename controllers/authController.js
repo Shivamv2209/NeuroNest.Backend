@@ -95,3 +95,23 @@ export const verifyUser = async (req,res)=>{
     }
 }
 
+export const getUser = async (req,res)=>{
+    try{
+        const {email} = req.query;
+        
+        if(!email){
+            return res.status(400).json({ message:"Email is required"});
+        }
+          
+        const user = await user_model.findOne({email});
+        if(!user){
+            return res.status(404).json({ message:"User not found"});
+        }
+
+        res.json({userId:user._id})
+
+    }catch(err){
+        return res.status(500).json({message:"Internal server error"})
+    }
+}
+
