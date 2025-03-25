@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import userRouter from "./routes/userRoutes.js";
 import cors from "cors";
+import chatsRouter from "./routes/chatRoutes.js";
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(express.urlencoded({extended:true}));
 
 app.use("/user",userRouter);
+app.use("/chat",chatsRouter);
 
 app.get("/",(req,res)=>{
     res.send("helo world");

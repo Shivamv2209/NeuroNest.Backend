@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from "dotenv";
 import {verifyUserToken} from "../utils/generateToken.js"
+import {saveChat,getchats,clearchatHistory} from "../controllers/chatController.js";
 
 dotenv.config();
 
@@ -8,5 +9,12 @@ dotenv.config();
 
 const chatsRouter = express.Router();
 
-chatsRouter.post("/new",verifyUserToken)
+chatsRouter.post("/",saveChat);
+
+chatsRouter.get("/:userId",getchats);
+
+chatsRouter.delete("/",clearchatHistory);
+
+
+export default chatsRouter;
 

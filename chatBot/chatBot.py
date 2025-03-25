@@ -55,8 +55,17 @@ engine = None
 
 # 📌 Function to save chat messages to backend
 def save_chat(user_id, role, content):
-    """Send chat messages to the backend API"""
+    """Validate and send chat messages to backend"""
+    if not content or len(content.strip()) == 0:
+        print("❌ Cannot save empty message.")
+        return
+
+    if len(content) > 5000:  # Prevent excessively long messages
+        print("❌ Message too long!")
+        return
+
     payload = {"userId": user_id, "role": role, "content": content}
+
     try:
         response = requests.post(BACKEND_API_URL, json=payload)
         if response.status_code == 200:
@@ -65,6 +74,7 @@ def save_chat(user_id, role, content):
             print(f"❌ Error saving chat: {response.json()}")
     except Exception as e:
         print(f"⚠ Error sending chat to backend: {str(e)}")
+
 
 # 📌 Function to stop speech output
 def stop_speech():
