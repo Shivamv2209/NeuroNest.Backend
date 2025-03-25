@@ -9,6 +9,8 @@ dotenv.config();
 
 const chatsRouter = express.Router();
 
+//when finally the frontend is going to work integrate verifyuser and verifyuserToken
+
 chatsRouter.post("/",saveChat);
 
 chatsRouter.get("/:userId",getchats);
