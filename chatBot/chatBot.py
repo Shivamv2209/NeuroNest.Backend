@@ -96,9 +96,35 @@ def text_to_speech(text):
     except Exception as e:
         print(f"⚠ Error in speech synthesis: {str(e)}")
 
+# 📌 Function to remove markdown formatting
+def clean_markdown(text):
+    text = re.sub(r'[*_#>`\[\]]+', '', text)
+    return text.strip()       
+
 # 📌 Function to check for silence
 def is_silent(audio_data):
     return np.max(np.abs(audio_data)) < SILENCE_THRESHOLD
+
+def save_audio(recording, sample_rate, filename):
+     """Saves recorded audio to a WAV file"""
+     with wave.open(filename, 'wb') as wav_file:
+         wav_file.setnchannels(1)
+         wav_file.setsampwidth(2)
+         wav_file.setframerate(sample_rate)
+         wav_file.writeframes(recording.tobytes())
+
+def speech_to_text(audio_file):
+    """Convert speech to text using SpeechRecognition"""
+    recognizer = sr.Recognizer()
+    with sr.AudioFile(audio_file) as source:
+        audio = recognizer.record(source)
+
+    try:
+        return recognizer.recognize_google(audio)
+    except sr.UnknownValueError:
+        return "Could not understand audio"
+    except sr.RequestError:
+        return "Speech recognition failed"
 
 # 📌 Function to record audio
 def record_audio():
@@ -136,30 +162,28 @@ def record_audio():
     return np.concatenate(recording, axis=0), SAMPLE_RATE
 
 # 📌 Function to save audio
-def save_audio(recording, sample_rate, filename):
-    """Saves recorded audio to a WAV file"""
-    with wave.open(filename, 'wb') as wav_file:
-        wav_file.setnchannels(1)
-        wav_file.setsampwidth(2)
-        wav_file.setframerate(sample_rate)
-        wav_file.writeframes(recording.tobytes())
+# def save_audio(recording, sample_rate, filename):
+#     """Saves recorded audio to a WAV file"""
+#     with wave.open(filename, 'wb') as wav_file:
+#         wav_file.setnchannels(1)
+#         wav_file.setsampwidth(2)
+#         wav_file.setframerate(sample_rate)
+#         wav_file.writeframes(recording.tobytes())
 
-# 📌 Function to convert speech to text
-def speech_to_text(audio_file):
-    recognizer = sr.Recognizer()
-    with sr.AudioFile(audio_file) as source:
-        audio = recognizer.record(source)
-        try:
-            return recognizer.recognize_google(audio)
-        except sr.UnknownValueError:
-            return "Could not understand audio"
-        except sr.RequestError:
-            return "Speech recognition failed"
+# # 📌 Function to convert speech to text
+# def speech_to_text(audio_file):
+#     recognizer = sr.Recognizer()
+#     with sr.AudioFile(audio_file) as source:
+#         audio = recognizer.record(source)
+#         try:
+#             return recognizer.recognize_google(audio)
+#         except sr.UnknownValueError:
+#             return "Could not understand audio"
+#         except sr.RequestError:
+#             return "Speech recognition failed"
 
-# 📌 Function to remove markdown formatting
-def clean_markdown(text):
-    text = re.sub(r'[*_#>`\[\]]+', '', text)
-    return text.strip()
+
+
 
 # 📌 Function to speak farewell
 def speak_farewell():
@@ -188,14 +212,21 @@ def main():
 
             if choice == "1":
                 recording, sample_rate = record_audio()
+
                 with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_file:
                     save_audio(recording, sample_rate, temp_file.name)
+
+                temp_filename = temp_file.name  # Store filename before using it
+
+                try:
+                    user_input = speech_to_text(temp_filename)
+                    print(f"🗣 You said: {user_input}")
+                finally:
+                    time.sleep(0.5)  # Ensure file is closed before deletion
                     try:
-                        user_input = speech_to_text(temp_file.name)
-                        print(f"🗣 You said: {user_input}")
-                        os.unlink(temp_file.name)
-                    except:
-                        os.unlink(temp_file.name)
+                        os.remove(temp_filename)  # Delete file safely
+                    except PermissionError:
+                        print(f"⚠ Could not delete {temp_filename}. It may still be in use.")
                         continue
 
             elif choice == "2":
