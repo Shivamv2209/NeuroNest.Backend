@@ -25,9 +25,7 @@ app.use(express.urlencoded({extended:true}));
 app.use("/user",userRouter);
 app.use("/chat",chatsRouter);
 
-app.get("/",(req,res)=>{
-    res.send("helo world");
-});
+
 
 
 
